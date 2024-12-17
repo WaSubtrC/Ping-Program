@@ -1,8 +1,9 @@
-﻿using System;
-using System.Diagnostics;
-using System.Net.NetworkInformation;
+﻿using System.Net.NetworkInformation;
 using System.Text;
 
+namespace Ping_Program
+{
+    
 class PingProgram
 {
     static void Main(string[] args)
@@ -38,7 +39,7 @@ class PingProgram
         int dataSize = 32; // 默认数据包大小
         bool showHelp = false;
 
-        for (int i = 0; i < tokens.Length; i++) // 从第2个参数开始解析
+        for (int i = 0; i < tokens.Length; i++) 
         {
             if (tokens[i] == "-n" && i + 1 < tokens.Length && int.TryParse(tokens[i + 1], out int n) && n > 0)
             {
@@ -61,7 +62,7 @@ class PingProgram
 
     static void PingHost(string host, int count, int dataSize)
     {
-        using (Ping pingSender = new Ping())
+        using (var pingSender = new Ping())
         {
             PingOptions options = new PingOptions { DontFragment = true };
             byte[] buffer = Encoding.ASCII.GetBytes(new string('a', dataSize));
@@ -84,32 +85,32 @@ class PingProgram
                         totalTime += reply.RoundtripTime;
                         minTime = Math.Min(minTime, reply.RoundtripTime);
                         maxTime = Math.Max(maxTime, reply.RoundtripTime);
-                        Console.WriteLine($"Reply from {reply.Address}: bytes={reply.Buffer.Length} time={reply.RoundtripTime}ms TTL={reply.Options.Ttl}");
+                        Console.WriteLine($"来自 {reply.Address} 的回复：字节数={reply.Buffer.Length} 时间={reply.RoundtripTime}ms TTL={reply.Options.Ttl}");
                     }
                     else
                     {
                         lostPackets++;
-                        Console.WriteLine("Request timed out.");
+                        Console.WriteLine("请求超时。");
                     }
                 }
                 catch (PingException ex)
                 {
-                    Console.WriteLine($"Ping failed: {ex.Message}");
+                    Console.WriteLine($"Ping 失败：{ex.Message}");
                     lostPackets++;
                 }
                 catch (Exception ex) // 捕获其他异常
                 {
-                    Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                    Console.WriteLine($"发生了意外错误：{ex.Message}");
                     lostPackets++;
                 }
             }
 
-            Console.WriteLine($"\nPing statistics for {host}:");
-            Console.WriteLine($"    Packets: Sent = {count}, Received = {successCount}, Lost = {lostPackets} ({(lostPackets * 100) / count}% loss)");
+            Console.WriteLine($"\n{host} 的 Ping 统计信息：");
+            Console.WriteLine($"    数据包：发送 = {count}, 接收 = {successCount}, 丢失 = {lostPackets} ({(lostPackets * 100) / count}% 丢包)");
             if (successCount > 0)
             {
-                Console.WriteLine($"Approximate round trip times in milli-seconds:");
-                Console.WriteLine($"    Minimum = {minTime}ms, Maximum = {maxTime}ms, Average = {totalTime / successCount}ms");
+                Console.WriteLine($"大致往返时间（毫秒）：");
+                Console.WriteLine($"    最小 = {minTime}ms, 最大 = {maxTime}ms, 平均 = {totalTime / successCount}ms");
             }
         }
     }
@@ -124,4 +125,5 @@ class PingProgram
         Console.WriteLine("    datasize size    指定每个Ping请求的数据包大小（大于0）");
         Console.WriteLine("    help        显示帮助信息");
     }
+}
 }
